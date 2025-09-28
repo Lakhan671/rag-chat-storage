@@ -1,0 +1,84 @@
+spring:
+  application:
+    name: rag-chat-storage
+
+  # R2DBC Configuration
+  spring:
+    r2dbc:
+      url: r2dbc:h2:mem:///ragchat;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+      username: sa
+      password: sa
+
+    # SQL initialization - Spring Boot will automatically run schema.sql
+    sql:
+      init:
+        mode: always
+        schema-locations: classpath:schema.sql
+        continue-on-error: false
+
+  # H2 Console (for development)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # Jackson Configuration
+  jackson:
+    default-property-inclusion: non_null
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+    time-zone: UTC
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+
+# Management/Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  health:
+    r2dbc:
+      enabled: true
+
+# Application Configuration
+app:
+  security:
+    api-key: app.security.api-key
+  rate-limiting:
+    requests-per-minute: ${RATE_LIMIT_RPM:60}
+    bucket-capacity: ${RATE_LIMIT_CAPACITY:100}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+    allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+
+# Logging Configuration
+logging:
+  level:
+    com.ragchat.rag_chat_storage: ${LOG_LEVEL:INFO}
+    io.r2dbc.h2: DEBUG
+    org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  info:
+    title: RAG Chat Storage API
+    description: Microservice for storing RAG chat sessions and messages
+    version: 1.0.0
+  servers:
+    - url: http://localhost:8080
+      description: Local development server
